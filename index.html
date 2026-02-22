@@ -31,14 +31,16 @@
                     },
                     colors: {
                         cyber: {
-                            bg: '#030712',
-                            panel: '#0d1117',
-                            border: '#00ffff22',
+                            bg: '#0b0b12',
+                            panel: 'rgba(15, 23, 42, 0.75)',
+                            border: 'rgba(0, 191, 255, 0.3)',
                             cyan: '#00ffff',
-                            green: '#00ff9f',
+                            blue: '#00bfff',
+                            green: '#00ff88',
                             magenta: '#ff00ff',
                             yellow: '#ffdd00',
-                            red: '#ff2244',
+                            red: '#ff3b3b',
+                            lime: '#39ff14',
                             dim: '#1a2332',
                         }
                     }
@@ -59,10 +61,11 @@
     <!-- ============================================================
        MAIN CONTAINER
   ============================================================ -->
-    <div id="app" class="relative z-10 flex flex-col h-screen w-screen max-w-7xl mx-auto px-4 py-3 gap-3">
+    <div id="app"
+        class="relative z-10 flex flex-col h-[100dvh] w-full max-w-7xl mx-auto px-2 md:px-4 py-2 md:py-3 gap-2 md:gap-3">
 
         <!-- ── TOP BAR ── -->
-        <header class="flex items-center justify-between gap-4 flex-shrink-0">
+        <header class="flex items-center justify-between gap-2 md:gap-4 flex-shrink-0">
 
             <!-- Title + mode badge -->
             <div class="flex items-center gap-3">
@@ -75,7 +78,7 @@
 
             <!-- Stats row -->
             <div class="flex items-center gap-2 md:gap-6 flex-wrap justify-end">
-                <div class="stat-block">
+                <div class="stat-block hidden sm:flex">
                     <span class="stat-label">ALIAS</span>
                     <span id="player-display" class="stat-value text-white">GUEST</span>
                 </div>
@@ -91,7 +94,7 @@
                     <span class="stat-label">STREAK</span>
                     <span id="streak-display" class="stat-value text-cyber-magenta">×1</span>
                 </div>
-                <div class="stat-block">
+                <div class="stat-block hidden sm:flex">
                     <span class="stat-label">LOCAL BEST</span>
                     <span id="best-display" class="stat-value text-cyber-green">0</span>
                 </div>
@@ -151,8 +154,9 @@
                 <!-- SEQUENCE DISPLAY PANEL -->
                 <div
                     class="glass-panel flex-1 flex flex-col items-center justify-center gap-4 relative overflow-hidden min-h-0 p-4">
-                    <!-- Background grid -->
-                    <div class="net-grid absolute inset-0 opacity-20 pointer-events-none" aria-hidden="true"></div>
+                    <!-- Background grid & Glow -->
+                    <div class="net-grid absolute inset-0 opacity-30 pointer-events-none" aria-hidden="true"></div>
+                    <div class="radial-glow z-[1]" aria-hidden="true"></div>
 
                     <!-- Sequence grid -->
                     <div id="sequence-grid"

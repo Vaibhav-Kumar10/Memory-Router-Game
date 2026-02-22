@@ -14,20 +14,23 @@
 
 :root {
     --cyan: #00ffff;
-    --green: #00ff9f;
+    --blue: #00bfff;
+    --green: #00ff88;
     --magenta: #ff00ff;
     --yellow: #ffdd00;
-    --red: #ff2244;
-    --bg: #030712;
-    --panel: #0d1117;
+    --red: #ff3b3b;
+    --lime: #39ff14;
+    --bg: #0b0b12;
+    --panel: rgba(15, 23, 42, 0.75);
     --dim: #1a2332;
-    --border: rgba(0, 255, 255, 0.15);
+    --border: rgba(0, 191, 255, 0.3);
 
-    --glow-cyan: 0 0 8px #00ffff, 0 0 20px #00ffff55;
-    --glow-green: 0 0 8px #00ff9f, 0 0 20px #00ff9f55;
-    --glow-magenta: 0 0 8px #ff00ff, 0 0 20px #ff00ff55;
-    --glow-red: 0 0 8px #ff2244, 0 0 20px #ff224455;
-    --glow-yellow: 0 0 8px #ffdd00, 0 0 20px #ffdd0055;
+    --glow-cyan: 0 0 10px #00ffff, 0 0 25px rgba(0, 255, 255, 0.4);
+    --glow-blue: 0 0 10px #00bfff, 0 0 25px rgba(0, 191, 255, 0.4);
+    --glow-green: 0 0 10px #00ff88, 0 0 25px rgba(0, 255, 136, 0.4);
+    --glow-magenta: 0 0 10px #ff00ff, 0 0 25px rgba(255, 0, 255, 0.4);
+    --glow-red: 0 0 10px #ff3b3b, 0 0 25px rgba(255, 59, 59, 0.4);
+    --glow-yellow: 0 0 10px #ffdd00, 0 0 25px rgba(255, 221, 0, 0.4);
 }
 
 html,
@@ -47,9 +50,10 @@ body {
     background: repeating-linear-gradient(to bottom,
             transparent 0px,
             transparent 2px,
-            rgba(0, 0, 0, 0.07) 2px,
-            rgba(0, 0, 0, 0.07) 4px);
-    animation: scanline-drift 8s linear infinite;
+            rgba(0, 0, 0, 0.15) 2px,
+            rgba(0, 0, 0, 0.15) 4px);
+    animation: scanline-drift 6s linear infinite;
+    opacity: 0.8;
 }
 
 @keyframes scanline-drift {
@@ -64,11 +68,13 @@ body {
 
 /* ── Glass Panel ── */
 .glass-panel {
-    background: rgba(13, 17, 23, 0.85);
+    background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    backdrop-filter: blur(12px);
+    border-radius: 6px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 191, 255, 0.05);
     position: relative;
+    overflow: hidden;
 }
 
 .glass-panel::before {
@@ -76,16 +82,29 @@ body {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.03) 0%, transparent 50%);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.04) 0%, transparent 60%);
     pointer-events: none;
+}
+
+/* Radial Glow Behind Center Panel */
+.radial-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60vw;
+    height: 60vh;
+    background: radial-gradient(circle, rgba(0, 191, 255, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* ── Network Grid Background ── */
 .net-grid {
     background-image:
-        linear-gradient(rgba(0, 255, 255, 0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 255, 0.08) 1px, transparent 1px);
-    background-size: 40px 40px;
+        linear-gradient(rgba(0, 191, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 191, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
 }
 
 /* ── Neon text ── */
@@ -114,44 +133,56 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 72px;
-    min-height: 72px;
+    min-width: 76px;
+    min-height: 76px;
     padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 255, 255, 0.2);
-    background: rgba(0, 255, 255, 0.04);
+    border-radius: 6px;
+    border: 1px solid rgba(0, 191, 255, 0.2);
+    background: rgba(15, 23, 42, 0.8);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: rgba(0, 255, 255, 0.3);
-    letter-spacing: 0.12em;
-    transition: all 0.2s ease;
+    color: rgba(0, 255, 255, 0.35);
+    letter-spacing: 0.1em;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    cursor: default;
 }
 
-.sequence-node::after {
+.sequence-node:hover {
+    transform: scale(1.05);
+    border-color: rgba(0, 191, 255, 0.5);
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
+}
+
+.sequence-node::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent);
     border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
+    pointer-events: none;
 }
 
 /* Active (glowing) state */
 .sequence-node.active {
-    background: rgba(0, 255, 255, 0.12);
+    background: rgba(0, 191, 255, 0.15);
     border-color: var(--cyan);
-    color: var(--cyan);
-    box-shadow: var(--glow-cyan), inset 0 0 20px rgba(0, 255, 255, 0.08);
-    transform: scale(1.1);
-    animation: node-pulse 0.15s ease;
+    color: #fff;
+    text-shadow: 0 0 5px #fff, var(--glow-cyan);
+    box-shadow: var(--glow-cyan), inset 0 0 25px rgba(0, 255, 255, 0.15);
+    transform: scale(1.12);
+    animation: node-pulse 0.2s ease-out;
+    z-index: 10;
 }
 
 .sequence-node.completed {
-    background: rgba(0, 255, 159, 0.06);
-    border-color: rgba(0, 255, 159, 0.4);
-    color: rgba(0, 255, 159, 0.5);
+    background: rgba(0, 255, 136, 0.05);
+    border-color: rgba(0, 255, 136, 0.4);
+    color: rgba(0, 255, 136, 0.6);
 }
 
 @keyframes node-pulse {
@@ -159,12 +190,13 @@ body {
         transform: scale(1.0);
     }
 
-    50% {
-        transform: scale(1.15);
+    40% {
+        transform: scale(1.18);
+        box-shadow: var(--glow-cyan), inset 0 0 35px rgba(0, 255, 255, 0.3);
     }
 
     100% {
-        transform: scale(1.1);
+        transform: scale(1.12);
     }
 }
 
@@ -206,24 +238,25 @@ body {
 /* ── Mode Badge ── */
 .badge-mode {
     font-family: 'Orbitron', sans-serif;
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.2em;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 4px;
-    border: 1px solid var(--cyan);
-    color: var(--cyan);
-    text-shadow: var(--glow-cyan);
-    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    text-shadow: var(--glow-blue);
+    background: rgba(0, 191, 255, 0.1);
+    box-shadow: inset 0 0 8px rgba(0, 191, 255, 0.15);
 }
 
 /* ── Icon Button ── */
 .icon-btn {
     color: #4b5563;
     border: 1px solid #1f2937;
-    border-radius: 6px;
+    border-radius: 4px;
     padding: 6px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(15, 23, 42, 0.5);
     transition: all 0.2s;
     cursor: pointer;
     display: flex;
@@ -235,18 +268,19 @@ body {
     color: var(--cyan);
     border-color: var(--cyan);
     box-shadow: var(--glow-cyan);
-    background: rgba(0, 255, 255, 0.05);
+    background: rgba(0, 255, 255, 0.08);
 }
 
 /* ── Start Button ── */
 .start-btn {
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(0, 255, 255, 0.05));
+    background: linear-gradient(135deg, rgba(0, 191, 255, 0.15), rgba(0, 191, 255, 0.05));
     border: 1px solid var(--cyan);
-    border-radius: 8px;
+    border-radius: 4px;
     color: var(--cyan);
     padding: 14px 28px;
-    font-size: 0.9rem;
-    letter-spacing: 0.2em;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
     cursor: pointer;
     position: relative;
     overflow: hidden;
@@ -270,7 +304,8 @@ body {
 
 .start-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 16px #00ffff, 0 0 40px #00ffff44;
+    background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 191, 255, 0.1));
+    box-shadow: 0 0 20px #00ffff, 0 0 50px rgba(0, 255, 255, 0.5);
 }
 
 .start-btn:active {
@@ -285,7 +320,7 @@ body {
 .outline-btn {
     background: transparent;
     border: 1px solid #374151;
-    border-radius: 8px;
+    border-radius: 4px;
     color: #9ca3af;
     padding: 14px 28px;
     font-size: 0.9rem;
@@ -297,18 +332,21 @@ body {
 .outline-btn:hover {
     border-color: var(--magenta);
     color: var(--magenta);
-    box-shadow: var(--glow-magenta);
+    box-shadow: var(--glow-magenta), inset 0 0 10px rgba(255, 0, 255, 0.1);
+    background: rgba(255, 0, 255, 0.05);
 }
 
 /* ── Submit Button ── */
 .submit-btn {
-    background: linear-gradient(135deg, rgba(0, 255, 159, 0.15), rgba(0, 255, 159, 0.05));
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 255, 136, 0.05));
     border: 1px solid var(--green);
-    border-radius: 6px;
+    border-radius: 4px;
     color: var(--green);
     padding: 10px 18px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     letter-spacing: 0.15em;
+    font-weight: 700;
+    text-shadow: var(--glow-green);
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
@@ -318,8 +356,9 @@ body {
 }
 
 .submit-btn:hover {
-    box-shadow: var(--glow-green);
+    box-shadow: var(--glow-green), inset 0 0 15px rgba(0, 255, 136, 0.2);
     transform: translateY(-1px);
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(0, 255, 136, 0.1));
 }
 
 .submit-btn:active {
@@ -328,26 +367,30 @@ body {
 
 /* ── Cyber Input ── */
 .cyber-input {
-    background: rgba(0, 255, 255, 0.04);
-    border: 1px solid rgba(0, 255, 255, 0.2);
-    border-radius: 6px;
+    background: #000;
+    border: 1px solid rgba(0, 191, 255, 0.3);
+    border-radius: 4px;
     color: var(--cyan);
-    padding: 10px 14px;
+    padding: 12px 16px;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 1rem;
-    letter-spacing: 0.15em;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
     outline: none;
     caret-color: var(--cyan);
-    transition: all 0.2s;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 0 10px rgba(0, 191, 255, 0.05);
 }
 
 .cyber-input:focus {
     border-color: var(--cyan);
-    box-shadow: var(--glow-cyan), inset 0 0 12px rgba(0, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: var(--glow-cyan), inset 0 0 20px rgba(0, 255, 255, 0.1);
 }
 
 .cyber-input::placeholder {
-    color: #374151;
+    color: #1f2937;
+    letter-spacing: 0.15em;
 }
 
 .cyber-input.shake {
@@ -802,60 +845,65 @@ body {
 
 /* ── Per-Token Input Boxes ── */
 .token-input {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
     text-align: center;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    background: rgba(0, 255, 255, 0.05);
-    border: 1px solid rgba(0, 255, 255, 0.25);
-    border-radius: 8px;
+    background: #000;
+    border: 1px solid rgba(0, 191, 255, 0.3);
+    border-radius: 4px;
     color: var(--cyan);
     outline: none;
-    caret-color: var(--cyan);
-    transition: all 0.15s ease;
+    caret-color: var(--magenta);
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
     padding: 0 4px;
+    box-shadow: inset 0 0 8px rgba(0, 191, 255, 0.05);
 }
 
 .token-input:focus {
-    border-color: var(--cyan);
-    box-shadow: var(--glow-cyan), inset 0 0 10px rgba(0, 255, 255, 0.06);
-    background: rgba(0, 255, 255, 0.1);
-    transform: scale(1.08);
+    border-color: var(--magenta);
+    box-shadow: var(--glow-magenta), inset 0 0 15px rgba(255, 0, 255, 0.15);
+    background: rgba(10, 0, 10, 0.9);
+    transform: scale(1.1);
+    z-index: 10;
 }
 
 /* Hex / 2-char tokens get wider box */
 .token-input.wide {
-    width: 68px;
-    font-size: 1rem;
+    width: 72px;
+    font-size: 1.1rem;
 }
 
 /* Correct fill */
 .token-input.filled-correct {
     border-color: var(--green);
     color: var(--green);
-    background: rgba(0, 255, 159, 0.1);
-    box-shadow: var(--glow-green);
+    background: rgba(0, 255, 136, 0.05);
+    box-shadow: var(--glow-green), inset 0 0 10px rgba(0, 255, 136, 0.1);
+    text-shadow: 0 0 8px var(--green);
 }
 
 /* Wrong fill */
 .token-input.filled-wrong {
     border-color: var(--red);
     color: var(--red);
-    background: rgba(255, 34, 68, 0.1);
+    background: rgba(255, 59, 59, 0.1);
+    box-shadow: var(--glow-red), inset 0 0 10px rgba(255, 59, 59, 0.1);
+    text-shadow: 0 0 8px var(--red);
     animation: token-shake 0.3s ease;
 }
 
 /* Partial prefix hint */
 .token-input.prefix-match {
-    border-color: rgba(0, 255, 159, 0.45);
+    border-color: rgba(0, 255, 136, 0.5);
 }
 
 .token-input.prefix-wrong {
-    border-color: rgba(255, 34, 68, 0.45);
+    border-color: rgba(255, 59, 59, 0.5);
 }
 
 @keyframes token-shake {
@@ -887,62 +935,71 @@ body {
     z-index: 45;
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
-    font-size: 1rem;
-    letter-spacing: 0.25em;
+    font-size: 1.25rem;
+    letter-spacing: 0.3em;
     text-align: center;
-    padding: 14px 28px;
-    border-radius: 8px;
-    border: 1px solid var(--magenta);
-    background: rgba(3, 7, 18, 0.96);
+    padding: 16px 32px;
+    border-radius: 4px;
+    border: 2px solid var(--magenta);
+    background: rgba(11, 11, 18, 0.95);
     color: var(--magenta);
     text-shadow: var(--glow-magenta);
     box-shadow: var(--glow-magenta);
     pointer-events: none;
-    animation: phase-banner-anim 1.8s ease forwards;
+    animation: phase-banner-anim 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 @keyframes phase-banner-anim {
     0% {
         opacity: 0;
-        transform: translate(-50%, -54%) scale(0.85);
+        transform: translate(-50%, -60%) scale(0.9);
+        filter: blur(4px);
     }
 
-    18% {
+    15% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1.02);
+        transform: translate(-50%, -50%) scale(1.05);
+        filter: blur(0px);
     }
 
-    70% {
+    80% {
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
+        filter: blur(0px);
     }
 
     100% {
         opacity: 0;
-        transform: translate(-50%, -46%) scale(0.95);
+        transform: translate(-50%, -40%) scale(0.9);
+        filter: blur(4px);
     }
 }
 
 /* ── Responsive tweaks ── */
 @media (max-width: 768px) {
     .sequence-node {
-        min-width: 56px;
-        min-height: 56px;
-        font-size: 0.85rem;
+        min-width: 48px;
+        min-height: 48px;
+        padding: 4px;
+        font-size: 0.8rem;
     }
 
     .token-input {
-        width: 44px;
-        height: 44px;
-        font-size: 0.95rem;
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
     }
 
     .token-input.wide {
-        width: 58px;
+        width: 48px;
+    }
+
+    .stat-label {
+        font-size: 0.5rem;
     }
 
     .stat-value {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
     }
 
     .radio-grid {
