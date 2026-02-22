@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network Sequence — Memory Router</title>
+    <meta name="description"
+        content="A cyberpunk memory puzzle game. Memorize the sequence. Route the data. Stay online." />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Orbitron + Share Tech Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet" />
+
+    <!-- Custom stylesheet -->
+    <link rel="stylesheet" href="style.css" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            bg: '#030712',
+                            panel: '#0d1117',
+                            border: '#00ffff22',
+                            cyan: '#00ffff',
+                            green: '#00ff9f',
+                            magenta: '#ff00ff',
+                            yellow: '#ffdd00',
+                            red: '#ff2244',
+                            dim: '#1a2332',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-cyber-bg text-white font-mono overflow-hidden select-none">
+
+    <!-- Scanline overlay -->
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <!-- Floating particles -->
+    <canvas id="particle-canvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- ============================================================
+       MAIN CONTAINER
+  ============================================================ -->
+    <div id="app" class="relative z-10 flex flex-col h-screen w-screen max-w-7xl mx-auto px-4 py-3 gap-3">
+
+        <!-- ── TOP BAR ── -->
+        <header class="flex items-center justify-between gap-4 flex-shrink-0">
+
+            <!-- Title + mode badge -->
+            <div class="flex items-center gap-3">
+                <h1
+                    class="font-orbitron text-lg md:text-2xl font-black text-cyber-cyan tracking-widest whitespace-nowrap neon-text-cyan">
+                    MEMORY<span class="text-cyber-magenta">ROUTER</span>
+                </h1>
+                <span id="mode-badge" class="badge-mode">NORMAL</span>
+            </div>
+
+            <!-- Stats row -->
+            <div class="flex items-center gap-2 md:gap-6 flex-wrap justify-end">
+                <div class="stat-block">
+                    <span class="stat-label">ALIAS</span>
+                    <span id="player-display" class="stat-value text-white">GUEST</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">SCORE</span>
+                    <span id="score-display" class="stat-value text-cyber-cyan">0</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">LEVEL</span>
+                    <span id="level-display" class="stat-value text-cyber-yellow">01</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">STREAK</span>
+                    <span id="streak-display" class="stat-value text-cyber-magenta">×1</span>
+                </div>
+                <div class="stat-block">
+                    <span class="stat-label">LOCAL BEST</span>
+                    <span id="best-display" class="stat-value text-cyber-green">0</span>
+                </div>
+
+                <!-- Settings button -->
+                <button id="btn-settings" class="icon-btn" title="Settings" aria-label="Open Settings">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- ── MAIN GAME AREA ── -->
+        <main class="flex flex-1 gap-3 min-h-0">
+
+            <!-- LEFT: Game panel -->
+            <section class="flex flex-col flex-1 gap-3 min-h-0">
+
+                <!-- Timer + phase status bar -->
+                <div class="glass-panel flex items-center gap-4 px-4 py-2 flex-shrink-0">
+                    <!-- SVG Timer Ring -->
+                    <div class="relative flex-shrink-0" style="width:52px;height:52px">
+                        <svg class="w-full h-full -rotate-90" viewBox="0 0 52 52">
+                            <circle cx="26" cy="26" r="22" fill="none" stroke="#1a2332" stroke-width="4" />
+                            <circle id="timer-ring" cx="26" cy="26" r="22" fill="none" stroke="#00ffff" stroke-width="4"
+                                stroke-dasharray="138.2" stroke-dashoffset="0" stroke-linecap="round"
+                                style="transition: stroke-dashoffset 1s linear, stroke 0.3s" />
+                        </svg>
+                        <span id="timer-display"
+                            class="absolute inset-0 flex items-center justify-center font-orbitron text-xs font-bold text-cyber-cyan">30</span>
+                    </div>
+
+                    <!-- Phase label -->
+                    <div class="flex-1">
+                        <div id="phase-label"
+                            class="font-orbitron text-sm md:text-base font-semibold tracking-widest text-cyber-cyan">
+                            PRESS START TO BEGIN
+                        </div>
+                        <div id="phase-sub" class="text-xs text-gray-500 tracking-wider mt-0.5">
+                            Memorize the sequence and type it back
+                        </div>
+                    </div>
+
+                    <!-- Power-up display -->
+                    <div id="powerup-block" class="flex items-center gap-2 opacity-0 transition-opacity duration-300">
+                        <button id="btn-powerup" class="powerup-btn" title="Memory Boost: Freeze timer for 1 round"
+                            disabled>
+                            <span class="text-xs font-orbitron">⚡ BOOST</span>
+                            <span id="powerup-count" class="text-cyber-yellow font-bold ml-1">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SEQUENCE DISPLAY PANEL -->
+                <div
+                    class="glass-panel flex-1 flex flex-col items-center justify-center gap-4 relative overflow-hidden min-h-0 p-4">
+                    <!-- Background grid -->
+                    <div class="net-grid absolute inset-0 opacity-20 pointer-events-none" aria-hidden="true"></div>
+
+                    <!-- Sequence grid -->
+                    <div id="sequence-grid"
+                        class="relative z-10 flex flex-wrap gap-3 justify-center items-center max-w-full">
+                        <!-- Nodes injected by JS -->
+                    </div>
+
+                    <!-- Instruction overlay (shown before start) -->
+                    <div id="start-overlay"
+                        class="absolute inset-0 flex flex-col items-center justify-center z-20 gap-6 bg-cyber-panel/80 backdrop-blur-sm">
+                        <div class="neon-title font-orbitron text-3xl md:text-5xl font-black text-center leading-tight">
+                            <span class="text-cyber-cyan">NETWORK</span><br />
+                            <span class="text-cyber-magenta">SEQUENCE</span>
+                        </div>
+                        <p class="text-gray-400 text-sm md:text-base text-center max-w-xs px-4 tracking-wide">
+                            Memorize the code sequence.<br />Type it back exactly. Stay online.
+                        </p>
+
+                        <!-- Player Name Input for Leaderboard -->
+                        <div class="flex flex-col items-center gap-2 mt-2">
+                            <input id="player-name-input" type="text" class="cyber-input text-center w-48 text-sm"
+                                placeholder="ENTER ALIAS" maxlength="12" autocomplete="off" spellcheck="false" />
+                        </div>
+
+                        <button id="btn-start" class="start-btn font-orbitron opacity-50 cursor-not-allowed" disabled>
+                            <span class="start-btn-inner">▶ INITIALIZE</span>
+                        </button>
+                    </div>
+
+                    <!-- Feedback flash overlay -->
+                    <div id="feedback-overlay"
+                        class="absolute inset-0 z-30 pointer-events-none hidden flex items-center justify-center">
+                        <div id="feedback-text"
+                            class="font-orbitron text-3xl md:text-5xl font-black tracking-widest text-center"></div>
+                    </div>
+                </div>
+
+                <!-- INPUT ZONE -->
+                <div id="input-zone"
+                    class="glass-panel flex flex-col gap-2 px-4 py-3 flex-shrink-0 opacity-0 transition-opacity duration-300 pointer-events-none">
+                    <!-- Header row -->
+                    <div class="flex items-center justify-between">
+                        <label class="font-orbitron text-xs text-gray-500 tracking-widest">ENTER SEQUENCE</label>
+                        <span id="input-warning" class="text-xs font-orbitron hidden" style="color:var(--red)">⚠
+                            INCOMPLETE</span>
+                    </div>
+
+                    <!-- Per-token input boxes — built dynamically by JS -->
+                    <div id="token-inputs" class="flex gap-2 flex-wrap justify-center items-center min-h-[60px] py-1">
+                    </div>
+
+                    <!-- Footer row -->
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-xs text-gray-600">Fill <span id="expected-length"
+                                class="text-cyber-cyan font-mono">0</span> boxes · auto-submits on last</span>
+                        <button id="btn-submit" class="submit-btn font-orbitron">
+                            CHECK <span class="text-xs ml-1 opacity-60">[↵]</span>
+                        </button>
+                    </div>
+                </div>
+
+
+            </section>
+
+            <!-- RIGHT: Leaderboard + history -->
+            <aside class="hidden lg:flex flex-col gap-3 w-56 flex-shrink-0">
+
+                <!-- Leaderboard -->
+                <div class="glass-panel flex-1 flex flex-col gap-2 p-3 overflow-hidden">
+                    <h2 class="font-orbitron text-xs text-cyber-cyan tracking-widest border-b border-cyber-border pb-1">
+                        TOP SCORES</h2>
+                    <ol id="leaderboard-list" class="flex flex-col gap-1 flex-1 overflow-y-auto text-sm">
+                        <!-- Injected by JS -->
+                    </ol>
+                </div>
+
+                <!-- Round history -->
+                <div class="glass-panel flex-1 flex flex-col gap-2 p-3 overflow-hidden">
+                    <h2
+                        class="font-orbitron text-xs text-cyber-magenta tracking-widest border-b border-cyber-border pb-1">
+                        ROUND LOG</h2>
+                    <ul id="history-list" class="flex flex-col gap-1 flex-1 overflow-y-auto text-xs text-gray-400">
+                        <!-- Injected by JS -->
+                    </ul>
+                </div>
+
+                <!-- Combo display -->
+                <div class="glass-panel p-3 text-center">
+                    <div class="font-orbitron text-xs text-gray-600 tracking-widest">MULTIPLIER</div>
+                    <div id="multiplier-display" class="font-orbitron text-3xl font-black text-cyber-yellow mt-1">×1
+                    </div>
+                    <div id="multiplier-bar" class="multiplier-bar mt-2">
+                        <div id="multiplier-fill" class="multiplier-fill" style="width:0%"></div>
+                    </div>
+                </div>
+
+            </aside>
+        </main>
+
+    </div><!-- /#app -->
+
+
+    <!-- ============================================================
+       GAME OVER SCREEN
+  ============================================================ -->
+    <div id="game-over-screen"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center bg-cyber-bg/95 backdrop-blur-md">
+        <div class="glass-panel max-w-lg w-full mx-4 p-6 flex flex-col gap-5 text-center relative overflow-hidden">
+            <div class="glitch-text font-orbitron text-3xl font-black" data-text="CONNECTION LOST">CONNECTION LOST</div>
+            <div class="text-gray-400 text-sm tracking-wide">Network sequence compromised.</div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div class="stat-card">
+                    <div class="stat-card-label">FINAL SCORE</div>
+                    <div id="go-score" class="stat-card-value text-cyber-cyan">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">LEVEL REACHED</div>
+                    <div id="go-level" class="stat-card-value text-cyber-yellow">1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">MAX STREAK</div>
+                    <div id="go-streak" class="stat-card-value text-cyber-magenta">0</div>
+                </div>
+            </div>
+
+            <!-- Correct sequence reveal -->
+            <div class="bg-cyber-dim rounded-lg p-3 border border-cyber-border text-left">
+                <div class="font-orbitron text-xs text-gray-500 tracking-widest mb-2">CORRECT SEQUENCE WAS:</div>
+                <div id="go-sequence" class="font-mono text-cyber-green text-sm tracking-wider flex flex-wrap gap-2">
+                </div>
+            </div>
+
+            <!-- New high score banner -->
+            <div id="go-new-best" class="hidden font-orbitron text-cyber-yellow text-sm tracking-widest animate-pulse">
+                ★ NEW HIGH SCORE! ★
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3">
+                <button id="btn-restart" class="start-btn font-orbitron flex-1">
+                    <span class="start-btn-inner">↺ RECONNECT</span>
+                </button>
+                <button id="btn-main-menu" class="outline-btn font-orbitron flex-1">
+                    ⌂ MENU
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================================
+       SETTINGS MODAL
+  ============================================================ -->
+    <div id="settings-modal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center bg-cyber-bg/90 backdrop-blur-md">
+        <div class="glass-panel max-w-md w-full mx-4 p-6 flex flex-col gap-5">
+            <div class="flex items-center justify-between">
+                <h2 class="font-orbitron text-lg text-cyber-cyan tracking-widest">SYS CONFIG</h2>
+                <button id="btn-close-settings" class="icon-btn text-gray-400 hover:text-white">✕</button>
+            </div>
+
+            <!-- Game Mode -->
+            <div class="setting-group">
+                <label class="setting-label">GAME MODE</label>
+                <div class="radio-grid" id="mode-selector">
+                    <button class="radio-btn active" data-value="normal">NORMAL</button>
+                    <button class="radio-btn" data-value="strict">STRICT</button>
+                    <button class="radio-btn" data-value="speed">SPEED</button>
+                    <button class="radio-btn" data-value="practice">PRACTICE</button>
+                </div>
+                <p id="mode-desc" class="text-xs text-gray-500 mt-1">Standard gameplay. Wrong answer = game over.</p>
+            </div>
+
+            <!-- Auto-progression info -->
+            <div class="setting-group">
+                <label class="setting-label">SEQUENCE PROGRESSION (AUTO)</label>
+                <div class="rounded-lg border border-cyber-border p-3 text-xs text-gray-500 space-y-1 font-mono"
+                    style="background:rgba(0,255,255,0.03)">
+                    <div class="flex justify-between"><span class="text-cyber-cyan">Lv 01–04</span><span>4 Digits ·
+                            Numbers · <span class="text-cyber-yellow">10s</span></span></div>
+                    <div class="flex justify-between"><span class="text-cyber-cyan">Lv 05–08</span><span>5–6 Digits ·
+                            Numbers · <span class="text-cyber-yellow">13s</span></span></div>
+                    <div class="flex justify-between"><span class="text-cyber-cyan">Lv 09–14</span><span>5–8 Tokens ·
+                            Alpha · <span class="text-cyber-yellow">15s</span></span></div>
+                    <div class="flex justify-between"><span class="text-cyber-cyan">Lv 15–20</span><span>6–9 Hex Codes ·
+                            2-char · <span class="text-cyber-yellow">20s</span></span></div>
+                    <div class="flex justify-between"><span class="text-cyber-magenta">Lv 21+</span><span>8–12 Mixed ·
+                            <span class="text-cyber-yellow">25s</span></span></div>
+                </div>
+            </div>
+
+            <!-- Sound toggle -->
+            <div class="flex items-center justify-between">
+                <label class="setting-label">SOUND FX</label>
+                <button id="btn-sound-toggle" class="toggle-btn active" aria-label="Toggle sound">
+                    <span id="sound-icon">🔊</span>
+                    <span id="sound-label" class="font-orbitron text-xs ml-2">ON</span>
+                </button>
+            </div>
+
+            <!-- Apply -->
+            <button id="btn-apply-settings" class="start-btn font-orbitron w-full">
+                <span class="start-btn-inner">✓ APPLY CONFIG</span>
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- ============================================================
+       LEVEL UP FLASH
+  ============================================================ -->
+    <div id="levelup-flash" class="fixed inset-0 z-40 pointer-events-none hidden flex items-center justify-center">
+        <div class="font-orbitron text-5xl md:text-7xl font-black text-cyber-green text-center levelup-text">
+            ACCESS<br />GRANTED
+        </div>
+    </div>
+
+    <!-- Game script -->
+    <script src="script.js"></script>
+</body>
+
+</html>

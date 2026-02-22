@@ -1,0 +1,17 @@
+{
+    "name": "memory-router",
+    "version": "1.0.0",
+    "description": "Network Sequence — Memory Router: A cyberpunk memory puzzle game",
+    "scripts": {
+        "dev": "npx --yes serve . -p 5500 --no-clipboard",
+        "start": "npx --yes serve . -p 5500 --no-clipboard"
+    },
+    "keywords": [
+        "game",
+        "memory",
+        "cyberpunk",
+        "puzzle"
+    ],
+    "author": "Enchantopia",
+    "license": "MIT"
+}
